@@ -12,68 +12,95 @@ Circuit Connections :-
 
 Working :- 
 
-[<img width="300" height="300" src="https://img.icons8.com/color/96/start.png" alt="video"/>](https://youtu.be/OrODncMhrcE)
+[<img width="300" height="300" src="https://img.icons8.com/color/96/start.png" alt="video"/>](https://youtu.be/BsKQYUnHONE)
 
 
 ---
 Code :-
+
+Main file:
+
+```
+// main.c file
+
+
+#include <xc.h>
+#include "xc8_header.h"
+#define XTAL_FREQ 20000000
+
+#include <stdbool.h>
+#define LEDT TRISBbits.TRISB1
+#define LEDP PORTBbits.RB1
+
+volatile unsigned int overflowcount = 0;
+volatile bool timeflag = 0;
+
+void __interrupt()ISR(void){
+    
+    if(INTCONbits.T0IF == 1){
+        TMR0 = 0;
+        INTCONbits.T0IF = 0;
+        overflowcount++;
+        
+        if(overflowcount >= 782){
+            overflowcount = 0;
+            timeflag = 1;
+        }
+
+    }
+}
+
+void Timer0_Init(){
+    
+    OPTION_REG = 0b00000100;
+    TMR0 = 0;
+    INTCONbits.T0IF = 0;
+    INTCONbits.GIE = 1;
+    INTCONbits.T0IE = 1;
+    
+}
+
+void main(void) {
+    
+    LEDT = 0;
+    Timer0_Init();
+    while(1){
+        if(timeflag == 1){
+            LEDP ^= 1;
+            timeflag = 0;
+        }
+    }
+}
+
+
+
 ```
 
-#include<Servo.h>
-Servo clnup;
-Servo clndn;
-int pr, sp;
+Header file:
 
-void setup(){
-  clnup.attach(7);
-  clndn.attach(6);
-  pinMode(A1,INPUT);
-  pinMode(A0,INPUT);
-  
-  clnup.write(0);
-  clndn.write(0);
-  
-  if(pr>100){
-    clnup.write(90);
-    delay(500);
-    clndn.write(90);
-    delay(1000);
-    clnup.write(0);
-    delay(500);
-    clndn.write(0);
-    delay(1000);
-  }
-}
-void loop(){
-  pr = analogRead(A0);
-  sp = analogRead(A1);
-  
-  if(sp<820 && sp>100){
-    clnup.write(90);
-    delay(500);
-    clndn.write(90);
-    delay(1000);
-    clnup.write(0);
-    delay(500);
-    clndn.write(0);
-    delay(1000);
-  }
-  
-  if(pr<800 && pr>100){
-    clnup.write(90);
-    delay(500);
-    clndn.write(90);
-    delay(1000);
-    clnup.write(0);
-    delay(500);
-    clndn.write(0);
-    delay(1000);
-  }
-  delay(2000);
-}
+```
+//xc8_header.h file
+
+#ifndef XC_HEADER_H
+#define	XC_HEADER_H
+
+#include <xc.h> // include processor files - each processor file is guarded.  
+
+// CONFIG
+#pragma config FOSC = EXTRC     // Oscillator Selection bits (RC oscillator)
+#pragma config WDTE = OFF       // Watchdog Timer Enable bit (WDT disabled)
+#pragma config PWRTE = OFF      // Power-up Timer Enable bit (PWRT disabled)
+#pragma config BOREN = OFF      // Brown-out Reset Enable bit (BOR disabled)
+#pragma config LVP = OFF        // Low-Voltage (Single-Supply) In-Circuit Serial Programming Enable bit (RB3 is digital I/O, HV on MCLR must be used for programming)
+#pragma config CPD = OFF        // Data EEPROM Memory Code Protection bit (Data EEPROM code protection off)
+#pragma config WRT = OFF        // Flash Program Memory Write Enable bits (Write protection off; all program memory may be written to by EECON control)
+#pragma config CP = OFF         // Flash Program Memory Code Protection bit (Code protection off)
+
+
+#endif	
 
 
 ```
 ---
-[TINKERCAD LINK](https://www.tinkercad.com/things/lRvBoGBZoyM-panel-clean?sharecode=exMkYOFheM__0TgxbhVHY7pibX1ZsfoSd3sjNemLcS4)
+[PROTEUS FILE LINK](https://github.com/lingeshkumarkamaraj/LED-Blink-Using-Timer0/blob/main/PIC%20timer0.pdsprj)
 ---
